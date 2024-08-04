@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div id="content"></div>
+    <h2>Login Form</h2>
+    <form id="loginForm">
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <input type="submit" value="Login" onclick="login()">
+    </form>
+    <h4 id="errorElement"></h4>
+
+    <h3><a href="register.html">Register Page</a></h3>
+</body>
+
+<script>
+
+    const SERVER = 'https://first-project-render-back.onrender.com';
+
+    const login = () => {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        axios.post(SERVER + "/login", {
+            username: username,
+            password: password
+        }, { headers: { 'Content-Type': 'application/json' } })
+            .then(response => {
+                const token = response.data.access_token;     
+                if (token && token.trim() !== "") {
+                    localStorage.setItem('token', token);
+                    window.location.href = 'books.html'
+                }
+                document.getElementById('errorElement').innerText = response.data.error
+              })
+
+            .catch(error => {
+                document.getElementById('errorElement').innerText = "There is an error";
+            });
+
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            login();
+        });
+    });
+
+</script>
+
+</html>

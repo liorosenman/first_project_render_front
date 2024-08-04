@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div id="menudiv"></div>
+    <h2>Loans</h2>
+    <select id="loan-filter">
+        <option value="all">All Loans</option>
+        <option value="late">Late Loans</option>
+    </select>
+    <button onclick="filterLoans()">Filter Loans</button>
+    <div id="loans-list"></div>
+</body>
+<script src="menu.js"></script>
+<script>
+    const token = localStorage.getItem('token')
+    const SERVER = 'https://first-project-render-back.onrender.com';
+    document.addEventListener('DOMContentLoaded', function () {
+        buildMenu()
+        displayAllLoans()
+    });
+
+    async function getCurrentUser() {
+        console.log("Current token:", token);
+        if (!token) {
+            return null;
+        }
+        try {
+            const response = await axios.get(SERVER + '/current_user', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+  
+            return response.data.username;
+        } catch (error) {
+            console.error('Error fetching current user:', error);
+   
+            return null;
+        }
+    }
+
+    async function filterLoans() {
+        const filter = document.getElementById('loan-filter').value;
+        if (filter === 'all') {
+            displayAllLoans();
+        } else if (filter === 'late') {
+            displayAllLateLoans();
+        }
+    }
+
+    async function displayAllLoans() {
+        try {
+            const response = await axios.get(SERVER + '/display_all_loans', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            displayLoans(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function displayAllLateLoans() {
+        try {
+            const response = await axios.get(SERVER + '/display_all_late_loans', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            displayLoans(response.data)
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function displayLoans(loans) {
+        current_user = await getCurrentUser();
+        console.log(current_user);
+        const loansList = document.getElementById('loans-list');
+        loansList.innerHTML = '';
+        loans.forEach(loan => {
+            const loanDiv = document.createElement('div');
+            loanDiv.innerHTML = `
+                    <p>Customer: ${loan.customer_name}</p>
+                    <p>Book: ${loan.book_name}</p>
+                    <p>Loan Date: ${loan.Loan_date}</p>
+                    <p>Return Date: ${loan.return_date}</p>
+                    <p>Active: ${loan.active}</p>            
+                    ${current_user != 'admin' && loan.active ? `<button onclick="returnBook(${loan.loan_id})">Return</button>` : ''}
+                    <hr>
+                    `;
+            loansList.appendChild(loanDiv);
+        });
+    }
+
+    async function returnBook(loanId) {
+        try {
+            await axios.post(SERVER + '/return_book', { loan_id: loanId }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            console.log("HERE WE ARE!");
+            filterLoans();
+        } catch (error) {
+        }
+    }
+</script>
+
+</html>
