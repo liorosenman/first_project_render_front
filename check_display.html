@@ -14,7 +14,7 @@
         const SERVER = 'https://first-project-render-back.onrender.com';
         document.addEventListener('DOMContentLoaded', function() {
             console.log(localStorage.getItem('token'));
-            axios.get(SERVER + 'display_books', {
+            axios.get(SERVER + '/display_books', {
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem('token') // Assuming the JWT is stored in localStorage
                 }
